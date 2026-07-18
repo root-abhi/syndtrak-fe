@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syndtrak-fe
+  namespace: frontend
+  labels:
+    app: syndtrak-fe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: syndtrak-fe
+  template:
+    metadata:
+      labels:
+        app: syndtrak-fe
+    spec:
+      containers:
+        - name: syndtrak-fe
+          image: 021558411440.dkr.ecr.ap-south-1.amazonaws.com/syndtrak/frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: syndtrak-fe
+  namespace: frontend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "classic"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: syndtrak-fe
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
