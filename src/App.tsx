@@ -62,13 +62,45 @@ function HeroCarousel() {
   )
 }
 
-function LoginHeader() {
-  const [userId, setUserId] = useState('')
+const API_URL = 'http://ac5dae7ab48374f2d9790293fdc829a8-113266431.ap-south-1.elb.amazonaws.com'
 
-  const handleLogin = (e: React.FormEvent) => {
+function LoginHeader() {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(
+    () => localStorage.getItem('syndtrak_user')
+  )
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: connect to backend auth endpoint
-    console.log('Login with userId:', userId)
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Login failed')
+      localStorage.setItem('syndtrak_token', data.token)
+      localStorage.setItem('syndtrak_user', data.user.username)
+      setLoggedInUser(data.user.username)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('syndtrak_token')
+    localStorage.removeItem('syndtrak_user')
+    setLoggedInUser(null)
+    setUsername('')
+    setPassword('')
   }
 
   return (
@@ -82,21 +114,41 @@ function LoginHeader() {
         <span className="brand-name">SyndTrak</span>
       </div>
 
-      <form className="login-row" onSubmit={handleLogin}>
-        <div className="login-field">
-          <label htmlFor="userId">User ID</label>
-          <input
-            id="userId"
-            type="text"
-            value={userId}
-            onChange={e => setUserId(e.target.value)}
-            autoComplete="username"
-          />
+      {loggedInUser ? (
+        <div className="login-row">
+          <span className="logged-in-msg">Welcome, <strong>{loggedInUser}</strong></span>
+          <button className="btn-login" onClick={handleLogout}>Logout</button>
         </div>
-        <button type="submit" className="btn-login">
-          Login to SyndTrak
-        </button>
-      </form>
+      ) : (
+        <form className="login-row" onSubmit={handleLogin}>
+          <div className="login-field">
+            <label htmlFor="username">User ID</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              autoComplete="username"
+              required
+            />
+          </div>
+          <div className="login-field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          {error && <span className="login-error">{error}</span>}
+          <button type="submit" className="btn-login" disabled={loading}>
+            {loading ? 'Logging in…' : 'Login to SyndTrak'}
+          </button>
+        </form>
+      )}
     </div>
   )
 }
