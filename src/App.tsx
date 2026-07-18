@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Deals from './pages/Deals'
 import DealRoom from './pages/DealRoom'
 import Lenders from './pages/Lenders'
+import LenderDetail from './pages/LenderDetail'
 import Documents from './pages/Documents'
 import Amendments from './pages/Amendments'
 
@@ -155,6 +156,7 @@ export default function App() {
           <Route path="/deals" element={<Deals />} />
           <Route path="/deals/:id" element={<DealRoom />} />
           <Route path="/lenders" element={<Lenders />} />
+          <Route path="/lenders/:id" element={<LenderDetail />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/amendments" element={<Amendments />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,5 +1,26 @@
-import { useState } from 'react'
-import { LENDERS } from '../data/mockData'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const LENDER_API = 'http://ac645ca6e443a426ea013ccf505d97c5-44806407.ap-south-1.elb.amazonaws.com'
+
+interface Lender {
+  id: number
+  institution: string
+  type: string
+  totalCommitment: number
+  activeDeals: number
+  status: string
+  region: string
+  rating: string
+  contact: string
+  email: string
+  phone: string
+  onboarded: string
+  address: string
+  aum: number
+  deals: string[]
+  notes: string
+}
 
 function statusBadge(status: string) {
   const map: Record<string, string> = { Active: 'badge-green', 'On Hold': 'badge-orange', Inactive: 'badge-gray' }
@@ -7,26 +28,38 @@ function statusBadge(status: string) {
 }
 
 export default function Lenders() {
+  const navigate = useNavigate()
+  const [lenders, setLenders] = useState<Lender[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
 
-  const types = ['All', ...Array.from(new Set(LENDERS.map(l => l.type)))]
+  useEffect(() => {
+    const token = localStorage.getItem('syndtrak_token')
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (typeFilter !== 'All') params.set('type', typeFilter)
 
-  const filtered = LENDERS.filter(l => {
-    const matchSearch = l.institution.toLowerCase().includes(search.toLowerCase()) ||
-      l.contact.toLowerCase().includes(search.toLowerCase())
-    const matchType = typeFilter === 'All' || l.type === typeFilter
-    return matchSearch && matchType
-  })
+    fetch(`${LENDER_API}/api/lenders?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(d => { setLenders(d.lenders ?? []); setLoading(false) })
+      .catch(() => { setError('Failed to load lenders'); setLoading(false) })
+  }, [search, typeFilter])
 
-  const totalCommitment = filtered.reduce((s, l) => s + l.totalCommitment, 0)
+  const types = ['All', ...Array.from(new Set(lenders.map(l => l.type)))]
+  const totalCommitment = lenders.reduce((s, l) => s + l.totalCommitment, 0)
 
   return (
     <div>
       <div className="page-header">
         <div>
           <h1 className="page-title">Lenders</h1>
-          <span className="page-subtitle">{filtered.length} institutions · ${(totalCommitment / 1000).toFixed(1)}B committed</span>
+          <span className="page-subtitle">
+            {loading ? 'Loading…' : `${lenders.length} institutions · $${(totalCommitment / 1000).toFixed(1)}B committed`}
+          </span>
         </div>
         <button className="btn-primary">+ Add Lender</button>
       </div>
@@ -51,6 +84,8 @@ export default function Lenders() {
         </div>
       </div>
 
+      {error && <div className="login-error-v" style={{ marginBottom: 16 }}>{error}</div>}
+
       <div className="card">
         <table className="data-table">
           <thead>
@@ -67,8 +102,10 @@ export default function Lenders() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map(l => (
-              <tr key={l.id} className="clickable-row">
+            {loading ? (
+              <tr><td colSpan={9} className="empty-state">Loading lenders…</td></tr>
+            ) : lenders.map(l => (
+              <tr key={l.id} className="clickable-row" onClick={() => navigate(`/lenders/${l.id}`)}>
                 <td><strong>{l.institution}</strong></td>
                 <td>{l.type}</td>
                 <td>{l.region}</td>
@@ -82,7 +119,7 @@ export default function Lenders() {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <div className="empty-state">No lenders match your search.</div>}
+        {!loading && lenders.length === 0 && <div className="empty-state">No lenders found.</div>}
       </div>
     </div>
   )
