@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
-const LENDER_API = 'http://ac645ca6e443a426ea013ccf505d97c5-44806407.ap-south-1.elb.amazonaws.com'
+const LENDER_API = ''
 
 interface Lender {
   id: number

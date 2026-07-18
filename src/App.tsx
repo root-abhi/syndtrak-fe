@@ -18,7 +18,7 @@ const SLIDES = [
   { heading: 'Global Reach,\nLocal Precision', sub: 'Supporting syndicated loan markets across the Americas, EMEA, and APAC' },
 ]
 
-const API_URL = 'http://ac5dae7ab48374f2d9790293fdc829a8-113266431.ap-south-1.elb.amazonaws.com'
+const API_URL = ''
 
 function HeroCarousel() {
   const [current, setCurrent] = useState(0)

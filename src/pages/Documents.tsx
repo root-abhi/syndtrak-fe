@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const DATA_API = 'http://ac645ca6e443a426ea013ccf505d97c5-44806407.ap-south-1.elb.amazonaws.com'
+const DATA_API = ''
 
 const FILE_ICONS: Record<string, string> = {
   'Credit Agreement': '📋', 'Term Sheet': '📄', 'CIM': '🔒',
